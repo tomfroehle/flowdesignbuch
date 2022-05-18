@@ -1,60 +1,66 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace csvviewer
+namespace csvviewer;
+
+public class Paging<T>
 {
-    public class Paging
+    private readonly int _pageLength;
+    private readonly IEnumerable<T> _records;
+    private int _currentPageNumber;
+
+    public Paging(IEnumerable<T> records, int pageLength)
     {
-        private int _pageNo;
+        _records = records;
+        _pageLength = pageLength;
+    }
 
-        public IEnumerable<string> ExtractFirstPage(IEnumerable<string> lines, int pageLength) {
-            _pageNo = 1;
-            return lines.Take(pageLength + 1);
-        }
+    public IEnumerable<T> ExtractFirstPage()
+    {
+        _currentPageNumber = 1;
+        return ExtractCurrentPage();
+    }
 
-        public IEnumerable<string> ExtractPrevPage(IEnumerable<string> lines, int pageLength) {
-            DecrementPageNo(pageLength);
-            var linesToSkip = CalculateLinesToSkip(pageLength);
-            return ExtractLinesForPage(lines, pageLength, linesToSkip);
-        }
+    public IEnumerable<T> ExtractPrevPage()
+    {
+        DecrementPageNo();
+        return ExtractCurrentPage();
+    }
 
-        public IEnumerable<string> ExtractNextPage(IEnumerable<string> lines, int pageLength) {
-            IncrementPageNo(lines, pageLength);
-            var linesToSkip = CalculateLinesToSkip(pageLength);
-            return ExtractLinesForPage(lines, pageLength, linesToSkip);
-        }
+    public IEnumerable<T> ExtractNextPage()
+    {
+        IncrementPageNo();
+        return ExtractCurrentPage();
+    }
 
-        public IEnumerable<string> ExtractLastPage(IEnumerable<string> lines, int pageLength) {
-            _pageNo = CalculateLastPageNo(lines, pageLength);
-            var linesToSkip = CalculateLinesToSkip(pageLength);
-            return ExtractLinesForPage(lines, pageLength, linesToSkip);
-        }
+    public IEnumerable<T> ExtractLastPage()
+    {
+        _currentPageNumber = CalculateLastPageNo();
+        return ExtractCurrentPage();
+    }
 
-        private static int CalculateLastPageNo(IEnumerable<string> lines, int pageLength) {
-            return lines.Count() / pageLength + 1;
-        }
+    private int CalculateLastPageNo()
+    {
+        return _records.Count() / _pageLength + 1;
+    }
 
-        private void IncrementPageNo(IEnumerable<string> lines, int pageLength) {
-            var numberOfLines = lines.Count();
-            if (_pageNo * pageLength + 1 < numberOfLines) {
-                _pageNo++;
-            }
-        }
+    private void IncrementPageNo()
+    {
+        var numberOfLines = _records.Count();
+        if (_currentPageNumber * _pageLength + 1 < numberOfLines) _currentPageNumber++;
+    }
 
-        private void DecrementPageNo(int pageLength) {
-            if ((_pageNo - 1) * pageLength + 1 > 1) {
-                _pageNo--;
-            }
-        }
+    private void DecrementPageNo()
+    {
+        if ((_currentPageNumber - 1) * _pageLength + 1 > 1) _currentPageNumber--;
+    }
 
-        private int CalculateLinesToSkip(int pageLength) {
-            return (_pageNo - 1) * pageLength + 1;
-        }
-
-        private static IEnumerable<string> ExtractLinesForPage(IEnumerable<string> lines, int pageLength, int linesToSkip) {
-            return lines
-                .Take(1)
-                .Union(lines.Skip(linesToSkip).Take(pageLength));
-        }
+    private IEnumerable<T> ExtractCurrentPage()
+    {
+        var recordsToSkip = (_currentPageNumber - 1) * _pageLength + 1;
+        return _records
+            .Take(1)
+            .Union(_records.Skip(recordsToSkip)
+                .Take(_pageLength));
     }
 }

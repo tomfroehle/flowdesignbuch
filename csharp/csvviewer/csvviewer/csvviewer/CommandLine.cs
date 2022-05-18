@@ -1,20 +1,14 @@
-﻿namespace csvviewer
+﻿namespace csvviewer;
+
+public static class CommandLine
 {
-    public class CommandLine
+    public static string GetFilename(string[] args)
     {
-        private int _pageLength;
+        return args[0];
+    }
 
-        public string GetFilename(string[] args) {
-            return args[0];
-        }
-
-        public int GetPageLength(string[] args) {
-            _pageLength = args.Length > 1 ? int.Parse(args[1]) : 10;
-            return _pageLength;
-        }
-
-        public int GetPageLength() {
-            return _pageLength;
-        }
+    public static int GetPageLength(string[] args)
+    {
+        return args.Length > 1 ? int.Parse(args[1]) : 10;
     }
 }

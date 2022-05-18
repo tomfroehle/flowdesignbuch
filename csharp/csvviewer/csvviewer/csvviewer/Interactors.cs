@@ -1,57 +1,43 @@
 ﻿using System.Collections.Generic;
 
-namespace csvviewer
+namespace csvviewer;
+
+public class Interactors
 {
-    public class Interactors
+    private readonly Paging<Record> _paging;
+
+    private Interactors(Paging<Record> paging)
     {
-        private readonly Paging _paging = new Paging();
-        private readonly CommandLine _commandLine = new CommandLine();
-        private readonly FileProvider _fileProvider = new FileProvider();
+        _paging = paging;
+    }
 
-        public IEnumerable<Record> Start(string[] args) {
-            var filename = _commandLine.GetFilename(args);
-            var pageLength = _commandLine.GetPageLength(args);
-            var lines = _fileProvider.ReadFileContent(filename);
-            var firstPage = _paging.ExtractFirstPage(lines, pageLength);
-            var records = Csv.CreateRecords(firstPage);
-            return records;
-        }
+    public static Interactors Create(string[] args)
+    {
+        var filename = CommandLine.GetFilename(args);
+        var pageLength = CommandLine.GetPageLength(args);
+        var lines = FileProvider.ReadFileContent(filename);
+        var records = Csv.CreateRecords(lines);
+        var paging = new Paging<Record>(records, pageLength);
+        return new Interactors(paging);
+    }
 
-        public IEnumerable<Record> FirstPage() {
-            var pageLength = _commandLine.GetPageLength();
-            var lines = _fileProvider.GetFileContent();
-            var nextPage = _paging.ExtractFirstPage(lines, pageLength);
-            var records = Csv.CreateRecords(nextPage);
-            return records;
-        }
+    public IEnumerable<Record> FirstPage()
+    {
+        return _paging.ExtractFirstPage();
+    }
 
-        public IEnumerable<Record> PrevPage() {
-            var pageLength = _commandLine.GetPageLength();
-            var lines = _fileProvider.GetFileContent();
-            var nextPage = _paging.ExtractPrevPage(lines, pageLength);
-            var records = Csv.CreateRecords(nextPage);
-            return records;
-        }
+    public IEnumerable<Record> PrevPage()
+    {
+        return _paging.ExtractPrevPage();
+    }
 
-        public IEnumerable<Record> NextPage() {
-            var pageLength = _commandLine.GetPageLength();
-            var lines = _fileProvider.GetFileContent();
-            var nextPage = _paging.ExtractNextPage(lines, pageLength);
-            var records = Csv.CreateRecords(nextPage);
-            return records;
-        }
+    public IEnumerable<Record> NextPage()
+    {
+        return _paging.ExtractNextPage();
+    }
 
-        public IEnumerable<Record> LastPage() {
-            var pageLength = _commandLine.GetPageLength();
-            var lines = _fileProvider.GetFileContent();
-            var nextPage = _paging.ExtractLastPage(lines, pageLength);
-            var records = Csv.CreateRecords(nextPage);
-            return records;
-        }
-
-        internal string GetFilename(string[] args) {
-            // InternalsVisibleTo
-            return args[0];
-        }
+    public IEnumerable<Record> LastPage()
+    {
+        return _paging.ExtractLastPage();
     }
 }
