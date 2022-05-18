@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace csvviewer;
-
-public class FileProvider
+namespace csvviewer
 {
-    public static IEnumerable<string> ReadFileContent(string filename)
+    public class FileProvider
     {
-        return File.ReadAllLines(filename);
+        public static IEnumerable<string> ReadFileContent(string filename)
+        {
+            return File.ReadAllLines(filename);
+        }
     }
 }
